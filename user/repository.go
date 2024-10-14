@@ -6,6 +6,8 @@ type Repository interface {
 	Save(user User) (User, error)
 }
 
+// menggunakan huruf kecil diawalan menandakan sebuah function tidak bersifat publik
+
 type repository struct {
 	db *gorm.DB
 }
@@ -14,6 +16,7 @@ func NewRepository(db *gorm.DB) *repository {
 	return &repository{db}
 }
 
+// Implementasi Interface Save pada Repository Interface
 func (r *repository) Save(user User) (User, error) {
 	err := r.db.Create(&user).Error
 

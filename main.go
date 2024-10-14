@@ -1,9 +1,9 @@
 package main
 
 import (
+	"akupeduli/handler"
 	"akupeduli/user"
 	"log"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
@@ -11,12 +11,6 @@ import (
 )
 
 func main() {
-	router := gin.Default()
-	router.GET("/handler", handler)
-	router.Run()
-}
-
-func handler(c *gin.Context) {
 	dsn := "root:@tcp(127.0.0.1:3306)/peduli?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
@@ -24,8 +18,14 @@ func handler(c *gin.Context) {
 		log.Fatal(err.Error())
 	}
 
-	var users []user.User
+	userRepository := user.NewRepository(db)
+	userService := user.NewService(userRepository)
 
-	db.Find(&users)
-	c.JSON(http.StatusOK, users)
+	userHandler := handler.NewUserHandler(userService)
+
+	router := gin.Default()
+	api := router.Group("/api/v1")
+	api.POST("/users", userHandler.RegisterUser)
+
+	router.Run()
 }
