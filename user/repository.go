@@ -4,6 +4,7 @@ import "gorm.io/gorm"
 
 type Repository interface {
 	Save(user User) (User, error)
+	FindByEmail(email string) (User, error)
 }
 
 // menggunakan huruf kecil diawalan menandakan sebuah function tidak bersifat publik
@@ -19,6 +20,16 @@ func NewRepository(db *gorm.DB) *repository {
 // Implementasi Interface Save pada Repository Interface
 func (r *repository) Save(user User) (User, error) {
 	err := r.db.Create(&user).Error
+
+	if err != nil {
+		return user, err
+	}
+	return user, nil
+}
+
+func (r *repository) FindByEmail(email string) (User, error) {
+	var user User
+	err := r.db.Where("email = ?", email).Find(&user).Error
 
 	if err != nil {
 		return user, err
