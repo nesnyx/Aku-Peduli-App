@@ -5,6 +5,7 @@ import (
 	"akupeduli/campaign"
 	"akupeduli/handler"
 	"akupeduli/helper"
+	"akupeduli/transaction"
 	"akupeduli/user"
 	"log"
 	"net/http"
@@ -30,8 +31,12 @@ func main() {
 	campaignRepository := campaign.NewRepository(db)
 	campaignService := campaign.NewService(campaignRepository)
 
+	trasanctionRepository := transaction.NewRepository(db)
+	transactionService := transaction.NewService(trasanctionRepository, campaignRepository)
+
 	campaignHandler := handler.NewCampaignHandler(campaignService)
 	userHandler := handler.NewUserHandler(userService, authService)
+	transactionHandler := handler.NewTransactionHandler(transactionService)
 
 	router := gin.Default()
 	router.Static("/images", "./images")
@@ -46,6 +51,11 @@ func main() {
 	api.POST("/campaigns", authMiddleware(authService, userService), campaignHandler.CreateCampaign)
 	api.PUT("/campaigns/:id", authMiddleware(authService, userService), campaignHandler.UpdateCampaign)
 	api.POST("/campaign-images", authMiddleware(authService, userService), campaignHandler.UploadImage)
+
+	// Transactions
+	api.GET("/campaings/:id/transactions", transactionHandler.GetCampaignTransactions)
+	api.GET("/transactions", authMiddleware(authService, userService), transactionHandler.GetUserTransactions)
+
 	router.Run()
 }
 
